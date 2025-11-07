@@ -1,28 +1,85 @@
-import { useState } from 'react'
+import React, { useMemo, useState } from 'react';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
+import SearchBar from './components/SearchBar';
+import AuthModals from './components/AuthModals';
+import RoadmapView from './components/RoadmapView';
 
-function App() {
-  const [count, setCount] = useState(0)
+const App = () => {
+  const [route, setRoute] = useState('home'); // 'home' | 'topic'
+  const [query, setQuery] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Vibe Coding Platform
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Your AI-powered development environment
-        </p>
-        <div className="text-center">
-          <button
-            onClick={() => setCount(count + 1)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-          >
-            Count is {count}
-          </button>
+  const handleSearch = (q) => {
+    setQuery(q);
+    setRoute('topic');
+  };
+
+  const handleAuthenticated = () => {
+    setIsAuthenticated(true);
+    setShowLogin(false);
+    setShowSignup(false);
+    setRoute('home');
+  };
+
+  const onLogout = () => {
+    setIsAuthenticated(false);
+    setRoute('home');
+  };
+
+  const content = useMemo(() => {
+    if (route === 'topic' && query) {
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-950 to-black">
+          <Navbar
+            isAuthenticated={isAuthenticated}
+            onLoginClick={() => setShowLogin(true)}
+            onSignupClick={() => setShowSignup(true)}
+            onLogoutClick={onLogout}
+            onProfileClick={() => setRoute('home')}
+          />
+          <div className="pt-24">
+            <div className="max-w-3xl mx-auto px-4">
+              <SearchBar onSubmit={handleSearch} />
+            </div>
+            <RoadmapView query={query} />
+          </div>
+        </div>
+      );
+    }
+
+    // Home route
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-950 to-black">
+        <Navbar
+          isAuthenticated={isAuthenticated}
+          onLoginClick={() => setShowLogin(true)}
+          onSignupClick={() => setShowSignup(true)}
+          onLogoutClick={onLogout}
+          onProfileClick={() => setRoute('home')}
+        />
+        <div className="pt-20">
+          <Hero>
+            <SearchBar onSubmit={handleSearch} />
+          </Hero>
         </div>
       </div>
-    </div>
-  )
-}
+    );
+  }, [route, query, isAuthenticated]);
 
-export default App
+  return (
+    <>
+      {content}
+      <AuthModals
+        openLogin={showLogin}
+        openSignup={showSignup}
+        onClose={() => { setShowLogin(false); setShowSignup(false); }}
+        onAuthenticated={handleAuthenticated}
+      />
+    </>
+  );
+};
+
+export default App;
